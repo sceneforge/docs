@@ -14,5 +14,5 @@
   },
   "license": "CC0",
   "private": true,
-  "scripts": {}
+  "packageManager": "yarn@4.3.1"
 }

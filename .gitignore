@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+
+# Yarn Berry
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+*.pid
+*.seed
+*.pid.lock
+
+# Built files
+build/
+built/
+dist/
+dev-dist/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Test Report Files
+coverage/
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+*.swp
+*.bak
+*.cache
+*.project
+*.settings
+*.tmproj
+*.esproj
+*.DS_Store
+*.log
+
+# Compiled ViteJS config files
+vite.config.ts.*
+
+# Storybook
+*storybook.log
+storybook-static
