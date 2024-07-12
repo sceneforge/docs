@@ -7,6 +7,12 @@ on:
         description: "Run ID of the build workflow"
         required: true
         type: number
+  workflow_call:
+    inputs:
+      run_id:
+        description: "Run ID of the build workflow"
+        required: true
+        type: number
 
 permissions:
   contents: read
