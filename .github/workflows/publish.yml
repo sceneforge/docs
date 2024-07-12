@@ -1,18 +1,7 @@
 name: Publish
 
 on:
-  workflow_dispatch:
-    inputs:
-      run_id:
-        description: "Run ID of the build workflow"
-        required: true
-        type: number
   workflow_call:
-    inputs:
-      run_id:
-        description: "Run ID of the build workflow"
-        required: true
-        type: number
 
 permissions:
   contents: read
@@ -36,7 +25,6 @@ jobs:
           name: sceneforge-docs
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: "sceneforge/sceneforge"
-          run-id: ${{ inputs.run_id }}
           path: ${{ github.workspace }}/dist
 
       - name: Setup Pages
