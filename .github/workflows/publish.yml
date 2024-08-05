@@ -1,12 +1,7 @@
-name: Publish
+name: Publish release
 
 on:
   workflow_dispatch:
-    inputs:
-      run-id:
-        description: 'Action Run ID where the artifact is located'
-        required: true
-        type: number
 
 permissions:
   contents: read
@@ -19,28 +14,56 @@ concurrency:
 
 jobs:
   publish:
+    name: Publish latest release
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Download Docs Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: sceneforge-docs
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: "sceneforge/sceneforge"
-          run-id: ${{ inputs.run-id }}
-          path: ${{ github.workspace }}/dist
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup Pages
+      - name: Get latest release
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const getLatestRelease = require('./scripts/getLatestRelease.js');
+            await getLatestRelease({ github, context, core, workspace: "${{ github.workspace }}" });
+            
+      - name: Validate release
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const validateRelease = require('./scripts/validateRelease.js');
+            await validateRelease({ core });
+
+      - name: Extract release artifact
+        run: |
+          mkdir -p "${{ github.workspace }}/dist";
+          tar -C "${{ github.workspace }}/dist" -xzf $RELEASE_ARTIFACT_FILENAME;
+          chmod -c -R +rX "${{ github.workspace }}/dist" | while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line";
+          done;
+
+      - name: Build release status
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const buildReleaseStatus = require("./scripts/buildReleaseStatus.js");
+            await buildReleaseStatus({ path: "${{ github.workspace }}/dist" });
+
+      - name: Configure pages
         uses: actions/configure-pages@v5
 
-      - name: Upload Artifact
+      - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ github.workspace }}/dist
+          path: "${{ github.workspace }}/dist"
+          retention-days: 1
       
-      - name: Deploy to GitHub Pages
+      - name: Deploy pages
         id: deployment
         uses: actions/deploy-pages@v4
