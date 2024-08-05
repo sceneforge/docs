@@ -1,3 +1,5 @@
+const RELEASE_STATUS_URL = "https://docs.sceneforge.org/.release-status.json";
+
 module.exports = async ({ github, core }) => {
   const draft = process.env.RELEASE_DRAFT;
   const name = process.env.RELEASE_NAME;
@@ -35,21 +37,32 @@ module.exports = async ({ github, core }) => {
   }
 
   try {
-    const result = await fetch("https://docs.sceneforge.org/.release-status.json");
-    const currentReleaseStatus = await result.json();
+    const result = await fetch(RELEASE_STATUS_URL);
+    if (result.status >= 200 && result.status < 300) {
+      const currentReleaseStatus = await result.json();
 
-    if (
-      typeof currentReleaseStatus === "object"
-      && currentReleaseStatus !== null
-      && "name" in currentReleaseStatus
-      && typeof currentReleaseStatus.name === "string"
-    ) {
-      if (currentReleaseStatus.name === name) {
-        errors.push({
-          title: "Already released",
-          message: `The release "${name}" is currently published`,
-        });
+      if (
+        typeof currentReleaseStatus === "object"
+        && currentReleaseStatus !== null
+        && "name" in currentReleaseStatus
+        && typeof currentReleaseStatus.name === "string"
+      ) {
+        if (currentReleaseStatus.name === name) {
+          errors.push({
+            title: "Already released",
+            message: `The release "${name}" is currently published`,
+          });
+        }
       }
+    }
+    else if (result.status === 404) {
+      core.warning("Current release status is not found");
+    }
+    else {
+      errors.push({
+        title: "Unable to fetch current release status",
+        message: `Failed to fetch "${RELEASE_STATUS_URL}", status code: ${result.status}`,
+      });
     }
   } catch (error) {
     errors.push({
